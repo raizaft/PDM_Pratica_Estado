@@ -1,5 +1,6 @@
 package ifpb.edu.br.pdm.pdm_pratica_estado
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,10 +11,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +36,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ifpb.edu.br.pdm.pdm_pratica_estado.ui.theme.PDM_Pratica_EstadoTheme
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
@@ -54,6 +59,11 @@ data class ArtPiece(val name: String, val artist: String, val imageResId: Int, v
 
 @Composable
 fun ArtGallery(modifier: Modifier = Modifier) {
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
+
     val artPieces = listOf(
         ArtPiece("London Eye - Londres", "Raiza Tomazoni, 2014", R.drawable.dsc_5922, contentDescription = "London Eye"),
         ArtPiece("Edimburgo", "Raiza Tomazoni, 2014", R.drawable.dsc_6475, contentDescription = "Edimburgo"),
@@ -65,43 +75,89 @@ fun ArtGallery(modifier: Modifier = Modifier) {
         ArtPiece("Mikonos - Grécia", "Raiza Tomazoni, 2015", R.drawable.img_1183, contentDescription = "Mikonos"),
         ArtPiece("Paris - França", "Raiza Tomazoni, 2015", R.drawable.img_2373, contentDescription = "Paris")
     )
-    var currentIndex by remember { mutableStateOf(0) }
-
+    var currentIndex by rememberSaveable { mutableStateOf(0) }
     val currentArt = artPieces[currentIndex]
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(top = 24.dp, bottom = 48.dp, start = 16.dp, end = 16.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        ImageContainer(
-            imageResId = currentArt.imageResId,
-            contentDescription = currentArt.contentDescription,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-        )
+    if (isPortrait) {
+        // Em modo retrato, use a estrutura vertical com a imagem acima do texto e botões
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(top = 24.dp, bottom = 48.dp, start = 16.dp, end = 16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ImageContainer(
+                imageResId = currentArt.imageResId,
+                contentDescription = currentArt.contentDescription,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(screenHeight * 0.3f)
+            )
 
-        ArtTitle(
-            name = currentArt.name,
-            artist = currentArt.artist,
-            modifier = Modifier.padding(top = 16.dp)
-        )
+            ArtTitle(
+                name = currentArt.name,
+                artist = currentArt.artist,
+                modifier = Modifier.padding(top = 16.dp)
+            )
 
-        Buttons(
-            onPreviousClick = {
-                if (currentIndex > 0) {
-                    currentIndex--
+            Buttons(
+                onPreviousClick = {
+                    if (currentIndex > 0) {
+                        currentIndex--
+                    }
+                },
+                onNextClick = {
+                    if (currentIndex < artPieces.size - 1) {
+                        currentIndex++
+                    }
                 }
-            },
-            onNextClick = {
-                if (currentIndex < artPieces.size - 1) {
-                    currentIndex++
-                }
+            )
+        }
+    } else {
+        // Em modo paisagem, use a Row para dividir a tela: imagem à esquerda e texto/botões à direita
+        Row(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(top = 24.dp, bottom = 48.dp, start = 16.dp, end = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ImageContainer(
+                imageResId = currentArt.imageResId,
+                contentDescription = currentArt.contentDescription,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(screenWidth * 0.4f)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(start = 16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ArtTitle(
+                    name = currentArt.name,
+                    artist = currentArt.artist,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                Buttons(
+                    onPreviousClick = {
+                        if (currentIndex > 0) {
+                            currentIndex--
+                        }
+                    },
+                    onNextClick = {
+                        if (currentIndex < artPieces.size - 1) {
+                            currentIndex++
+                        }
+                    }
+                )
             }
-        )
+        }
     }
 }
 
