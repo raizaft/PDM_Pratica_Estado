@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "ifpb.edu.br.pdm.pdm_pratica_estado"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "ifpb.edu.br.pdm.pdm_pratica_estado"
